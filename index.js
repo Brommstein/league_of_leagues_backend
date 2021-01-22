@@ -12,8 +12,8 @@ app.use(express.json());
 
 app.post('/users', async (req, res) => {
     try {
-        const { leaguename } = req.body;
-        const newUser = await pool.query('INSERT INTO users (leaguename) VALUES($1) RETURNING *', [leaguename]);
+        const { leaguename, preferedrole, secondaryrole } = req.body;
+        const newUser = await pool.query('INSERT INTO users (leaguename, preferedrole, secondaryrole) VALUES($1, $2, $3)', [leaguename, preferedrole, secondaryrole]);
         res.json(newUser.rows[0]);
     } catch (err) {
         console.error(err.message);
