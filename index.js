@@ -7,6 +7,8 @@ const pool = require('./db');
 app.use(cors());
 app.use(express.json());
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
 //ROUTES//
 
 //USERS
@@ -77,8 +79,8 @@ app.delete('/users/:id', async (req, res) => {
 
 app.post('/teams', async (req, res) => {
     try {
-        const { captain, top, jungle, mid, adc, support, teamname, captainid, topid, jungleid, midid, adcid, supportid } = req.body;
-        const newTeam = await pool.query('INSERT INTO teams (captain, top, jungle, mid, adc, support, teamname, captainid, topid, jungleid, midid, adcid, supportid) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [captain, top, jungle, mid, adc, support, teamname, captainid, topid, jungleid, midid, adcid, supportid]);
+        const { teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support } = req.body;
+        const newTeam = await pool.query('INSERT INTO teams (teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)', [teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support]);
         res.json(newTeam.rows[0]);
     } catch (err) {
         console.error(err.message);
@@ -112,8 +114,8 @@ app.get('/teams/:id', async (req, res) => {
 app.put('/teams/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { captain, top, jungle, mid, adc, support, teamname, captainid, topid, jungleid, midid, adcid, supportid } = req.body;
-        const updateTeam = await pool.query('UPDATE teams SET captain = $1, top = $2, jungle = $3, mid = $4, adc = $5, support = $6, teamname = $7, captainid = $8, topid = $9, jungleid = $10, midid = $11, adcid = $12, supportid = $13 WHERE teamid = $14', [captain, top, jungle, mid, adc, support, teamname, captainid, topid, jungleid, midid, adcid, supportid, id]);
+        const { teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support } = req.body;
+        const updateTeam = await pool.query('UPDATE teams SET teamname = $1, teamabr = $2, captainid = $3, captain = $4, topid = $5, top = $6, jungleid = $7, jungle = $8, midid = $9, mid = $10, adcid = $11, adc = $12, supportid = $13 support = $14 WHERE teamid = $14', [teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support, id]);
         res.json('League team was updated!');
     } catch (err) {
         console.error(err.message);
@@ -135,6 +137,67 @@ app.delete('/teams/:id', async (req, res) => {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 //USERSTATUS
+//create a status
+
+app.post('/userstatus', async (req, res) => {
+    try {
+        const { user, leader, admin } = req.body;
+        const newuserstatus = await pool.query('INSERT INTO userstatus (user, leader, admin) VALUES($1, $2, $3)', [user, leader, admin]);
+        res.json(newuserstatus.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+//get all statuses
+
+app.get('/userstatus', async (req, res) => {
+    try {
+        const alluserstatus = await pool.query('SELECT * FROM userstatus');
+        res.json(alluserstatus.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+//get a status
+
+app.get('/userstatus/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const status = await pool.query('SELECT * FROM userstatus WHERE userid = $1', [id]);
+        res.json(status.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+//update a status
+
+app.put('/userstatus/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { user, leader, admin } = req.body;
+        const updateuserstatus = await pool.query('UPDATE userstatus SET user = $1, leader = $2, admin = $3 WHERE userid = $4', [user, leader, admin, id]);
+        res.json('User status was updated!');
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+//delete a status
+
+app.delete('/userstatus/:id', async (req, res) => {
+    try {
+        const {id} = req.params;
+        const deleteuserstatus = await pool.query('DELETE FROM userstatus WHERE userid = $1', [id]);
+        res.json('User status was deleted!');
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 const PORT = process.env.PORT || 5000;
 
