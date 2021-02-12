@@ -12,9 +12,13 @@
   "author": "Ryan Conley",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.0",
+    "config": "^3.3.3",
     "cors": "^2.8.5",
     "debug": "^4.3.1",
     "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "jsonwebtoken": "^8.5.1",
     "pg": "^8.5.1"
   },
   "devDependencies": {

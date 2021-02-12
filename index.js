@@ -2,6 +2,13 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const pool = require('./db');
+const config = require('config');
+const jwt = require('jsonwebtoken');
+const auth = require('./middleware/auth');
+
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 
 //middleware
 app.use(cors());
@@ -15,9 +22,19 @@ app.use(express.json());
 
 app.post('/users', async (req, res) => {
     try {
-        const { leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday } = req.body;
-        const newUser = await pool.query('INSERT INTO users (leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday]);
+
+        const { leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday, team } = req.body;
+
+        //Check for all needed data
+        if (!leaguename || !preferedrole || !team) return res.status(400).json({ msg: 'Please enter all fields' });
+
+        //Check if user already exists
+        //Need to find way to do this...
+
+        //Send data to db
+        const newUser = await pool.query('INSERT INTO users (leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday, team) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', [leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday, team]);
         res.json(newUser.rows[0]);
+
     } catch (err) {
         console.error(err.message);
     }
@@ -27,8 +44,10 @@ app.post('/users', async (req, res) => {
 
 app.get('/users', async (req, res) => {
     try {
+
         const allUsers = await pool.query('SELECT * FROM users');
         res.json(allUsers.rows);
+
     } catch (err) {
         console.error(err.message);
     }
@@ -48,12 +67,42 @@ app.get('/users/:id', async (req, res) => {
 
 //update a user
 
-app.put('/users/:id', async (req, res) => {
+app.put('/users/:id', auth, async (req, res) => {
     try {
         const { id } = req.params;
         const { leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday } = req.body;
-        const updateUser = await pool.query('UPDATE users SET leaguename = $1, preferedrole = $2, secondaryrole = $3, sunday = $4, monday = $5, tuesday = $6, wednesday = $7, thursday = $8, friday = $9, saturday = $10 WHERE userid = $11', [leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday, id]);
+
+        if (leaguename) await pool.query('UPDATE users SET leaguename = $1 WHERE userid = $2', [leaguename, id]);
+        if (preferedrole) await pool.query('UPDATE users SET preferedrole = $1 WHERE userid = $2', [preferedrole, id]);
+        if (secondaryrole) await pool.query('UPDATE users SET secondaryrole = $1 WHERE userid = $2', [secondaryrole, id]);
+
+        //If user changed secondary to null
+        const secondarynull = await pool.query('SELECT secondaryrole FROM users WHERE userid = $1', [id]);
+        if (secondaryrole !== secondarynull.rows[0].secondaryrole) await pool.query("UPDATE users SET secondaryrole = '' WHERE userid = $1", [id]);
+
+        if (sunday) await pool.query('UPDATE users SET sunday = $1 WHERE userid = $2', [sunday, id]);
+        if (monday) await pool.query('UPDATE users SET monday = $1 WHERE userid = $2', [monday, id]);
+        if (tuesday) await pool.query('UPDATE users SET tuesday = $1 WHERE userid = $2', [tuesday, id]);
+        if (wednesday) await pool.query('UPDATE users SET wednesday = $1 WHERE userid = $2', [wednesday, id]);
+        if (thursday) await pool.query('UPDATE users SET thursday = $1 WHERE userid = $2', [thursday, id]);
+        if (friday) await pool.query('UPDATE users SET friday = $1 WHERE userid = $2', [friday, id]);
+        if (saturday) await pool.query('UPDATE users SET saturday = $1 WHERE userid = $2', [saturday, id]);
+
         res.json('League user was updated!');
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+//TEAM UPDATE
+//update a user's team
+
+app.put('/teamupdate/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { team } = req.body;
+        const updateteam = await pool.query('UPDATE users SET team = $1 WHERE userid = $2', [team, id])
+        res.json('User team was updated!')
     } catch (err) {
         console.error(err.message);
     }
@@ -98,6 +147,7 @@ app.get('/teams', async (req, res) => {
 })
 
 //get a team
+
 app.get('/teams/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -138,11 +188,33 @@ app.delete('/teams/:id', async (req, res) => {
 //USERSTATUS
 //create a status
 
-app.post('/userstatus', async (req, res) => {
+app.post('/accountstatus', async (req, res) => {
+    const { userid, username, password, status } = req.body;
     try {
-        const { user, leader, admin } = req.body;
-        const newuserstatus = await pool.query('INSERT INTO userstatus (user, leader, admin) VALUES($1, $2, $3)', [user, leader, admin]);
-        res.json(newuserstatus.rows[0]);
+        await bcrypt.hash(password, saltRounds, async function (err, hash) {
+            if (err) throw err;
+            const newaccountstatus = await pool.query('INSERT INTO accountstatus (userid, username, password, status) VALUES($1, $2, $3, $4)', [userid, username, hash, status]);
+            jwt.sign(
+                {
+                    id: userid,
+                    name: username,
+                    status: status
+                },
+                config.get('jwtSecret'),
+                { expiresIn: 3600 },
+                (err, token) => {
+                    if (err) throw err;
+                    res.json({
+                        token,
+                        user: {
+                            id: userid,
+                            username: username,
+                            status: status
+                        }
+                    })
+                }
+            )
+        });
     } catch (err) {
         console.error(err.message);
     }
@@ -150,10 +222,10 @@ app.post('/userstatus', async (req, res) => {
 
 //get all statuses
 
-app.get('/userstatus', async (req, res) => {
+app.get('/accountstatus', async (req, res) => {
     try {
-        const alluserstatus = await pool.query('SELECT * FROM userstatus');
-        res.json(alluserstatus.rows);
+        const allaccountstatus = await pool.query('SELECT * FROM accountstatus');
+        res.json(allaccountstatus.rows);
     } catch (err) {
         console.error(err.message);
     }
@@ -161,23 +233,23 @@ app.get('/userstatus', async (req, res) => {
 
 //get a status
 
-app.get('/userstatus/:id', async (req, res) => {
+app.get('/accountstatus/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const status = await pool.query('SELECT * FROM userstatus WHERE userid = $1', [id]);
+        const status = await pool.query('SELECT * FROM accountstatus WHERE userid = $1', [id]);
         res.json(status.rows[0]);
     } catch (err) {
         console.error(err.message);
     }
 })
 
-//update a status
+//update a user to captain
 
-app.put('/userstatus/:id', async (req, res) => {
+app.put('/accountstatus/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { user, leader, admin } = req.body;
-        const updateuserstatus = await pool.query('UPDATE userstatus SET user = $1, leader = $2, admin = $3 WHERE userid = $4', [user, leader, admin, id]);
+        const { status } = req.body;
+        const updateaccountstatus = await pool.query('UPDATE accountstatus SET status = $1 WHERE userid = $2', [status, id]);
         res.json('User status was updated!');
     } catch (err) {
         console.error(err.message);
@@ -186,11 +258,65 @@ app.put('/userstatus/:id', async (req, res) => {
 
 //delete a status
 
-app.delete('/userstatus/:id', async (req, res) => {
+app.delete('/accountstatus/:id', async (req, res) => {
     try {
-        const {id} = req.params;
-        const deleteuserstatus = await pool.query('DELETE FROM userstatus WHERE userid = $1', [id]);
+        const { id } = req.params;
+        const deleteaccountstatus = await pool.query('DELETE FROM accountstatus WHERE userid = $1', [id]);
         res.json('User status was deleted!');
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+//USERLOGIN
+//Check user login
+
+app.post('/auth', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ message: 'Please enter all fields...' });
+
+        //Find user in database
+        const user = await pool.query(`SELECT * FROM accountstatus WHERE username=$1`, [username]);
+        if (!user.rows) return res.status(400).json({ message: 'User does not exist...' });
+
+        //Validate password
+        bcrypt.compare(password, user.rows[0].password).then(isMatch => {
+            if (!isMatch) return res.status(400).json({ message: 'Invalid credentials...' });
+
+            jwt.sign(
+                {
+                    id: user.rows[0].userid,
+                    name: user.rows[0].username,
+                    status: user.rows[0].status
+                },
+                config.get('jwtSecret'),
+                { expiresIn: 3600 },
+                (err, token) => {
+                    if (err) throw err;
+                    res.json({
+                        token,
+                        user: {
+                            id: user.rows[0].userid,
+                            name: user.rows[0].username,
+                            status: user.rows[0].status
+                        }
+                    });
+                }
+            )
+        })
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+app.get('/auth/user', auth, async (req, res) => {
+    const { id } = res.locals.user;
+    try {
+        await pool.query('SELECT username, status FROM accountstatus WHERE userid = $1', [id])
+            .then(user => res.json(user.rows[0]));
     } catch (err) {
         console.error(err.message);
     }
