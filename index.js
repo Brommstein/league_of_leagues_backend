@@ -164,7 +164,21 @@ app.put('/teams/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support } = req.body;
-        const updateTeam = await pool.query('UPDATE teams SET teamname = $1, teamabr = $2, captainid = $3, captain = $4, topid = $5, top = $6, jungleid = $7, jungle = $8, midid = $9, mid = $10, adcid = $11, adc = $12, supportid = $13 support = $14 WHERE teamid = $14', [teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support, id]);
+        if (teamname) await pool.query('UPDATE teams SET teamname = $1 WHERE teamid = $2', [teamname, id]);
+        if (teamabr) await pool.query('UPDATE teams SET teamabr = $1 WHERE teamid = $2', [teamabr, id]);
+        if (captainid) await pool.query('UPDATE teams SET captainid = $1 WHERE teamid = $2', [captainid, id]);
+        if (captain) await pool.query('UPDATE teams SET captain = $1 WHERE teamid = $2', [captain, id]);
+        if (topid) await pool.query('UPDATE teams SET topid = $1 WHERE teamid = $2', [topid, id]);
+        if (top) await pool.query('UPDATE teams SET top = $1 WHERE teamid = $2', [top, id]);
+        if (topid) await pool.query('UPDATE teams SET topid = $1 WHERE teamid = $2', [topid, id]);
+        if (jungleid) await pool.query('UPDATE teams SET jungleid = $1 WHERE teamid = $2', [jungleid, id]);
+        if (jungle) await pool.query('UPDATE teams SET jungle = $1 WHERE teamid = $2', [jungle, id]);
+        if (midid) await pool.query('UPDATE teams SET midid = $1 WHERE teamid = $2', [midid, id]);
+        if (mid) await pool.query('UPDATE teams SET mid = $1 WHERE teamid = $2', [mid, id]);
+        if (adcid) await pool.query('UPDATE teams SET adcid = $1 WHERE teamid = $2', [adcid, id]);
+        if (adc) await pool.query('UPDATE teams SET adc = $1 WHERE teamid = $2', [adc, id]);
+        if (supportid) await pool.query('UPDATE teams SET supportid = $1 WHERE teamid = $2', [supportid, id]);
+        if (support) await pool.query('UPDATE teams SET support = $1 WHERE teamid = $2', [support, id]);
         res.json('League team was updated!');
     } catch (err) {
         console.error(err.message);
@@ -249,8 +263,12 @@ app.put('/accountstatus/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
-        const updateaccountstatus = await pool.query('UPDATE accountstatus SET status = $1 WHERE userid = $2', [status, id]);
-        res.json('User status was updated!');
+        const checkadmin = await pool.query('SELECT * FROM accountstatus WHERE userid = $1', [id]);
+        if (checkadmin.rows[0].status === 'Admin') res.json('User is an admin');
+        if (checkadmin.rows[0].status !== 'Admin') {
+            const updateaccountstatus = await pool.query('UPDATE accountstatus SET status = $1 WHERE userid = $2', [status, id]);
+            res.json('User status was updated!');
+        }
     } catch (err) {
         console.error(err.message);
     }
@@ -320,6 +338,13 @@ app.get('/auth/user', auth, async (req, res) => {
     } catch (err) {
         console.error(err.message);
     }
+})
+
+//decode token
+app.get('/decode', async (req, res) => {
+    const token = req.header('x-auth-token');
+    const decoded = jwt.verify(token, config.get('jwtSecret'));
+    res.json(decoded);
 })
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
