@@ -1,5 +1,4 @@
 const pool = require('./db'); //might get rid of
-const config = require('config');
 const jwt = require('jsonwebtoken');
 
 const bcrypt = require('bcrypt');
