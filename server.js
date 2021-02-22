@@ -6,7 +6,7 @@ const saltRounds = 10;
 
 //middleware
 const auth = require('./middleware/auth');
-app.use(express.json());
+
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -22,6 +22,8 @@ const db = knex({
     client: 'pg',
     connection: DATABASE_URL
 });
+
+app.use(express.json());
 
 app.set('db', db);
 
