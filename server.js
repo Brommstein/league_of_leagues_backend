@@ -1,7 +1,4 @@
-const express = require('express');
-const app = express();
-const cors = require('cors');
-const pool = require('./db');
+const pool = require('./db'); //might get rid of
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
@@ -10,8 +7,28 @@ const saltRounds = 10;
 
 //middleware
 const auth = require('./middleware/auth');
-app.use(cors());
 app.use(express.json());
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+const knex = require('knex');
+const app = require('./app');
+const { PORT, DATABASE_URL, JWTSECRET } = require('./config');
+if (process.env.NODE_ENV === "production") {
+    const pg = require('pg');
+    pg.defaults.ssl = { rejectUnauthorized: false }
+}
+
+const db = knex({
+    client: 'pg',
+    connection: DATABASE_URL
+});
+
+app.set('db', db);
+
+app.listen(PORT, () => {
+    console.log(`Server listening at http://localhost:${PORT}`);
+});
 
 //ROUTES//
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -221,7 +238,7 @@ app.post('/accountstatus', async (req, res) => {
                     name: username,
                     status: status
                 },
-                config.get('jwtSecret'),
+                JWTSECRET,
                 { expiresIn: 3600 },
                 (err, token) => {
                     if (err) throw err;
@@ -317,7 +334,7 @@ app.post('/auth', async (req, res) => {
                     name: user.rows[0].username,
                     status: user.rows[0].status
                 },
-                config.get('jwtSecret'),
+                JWTSECRET,
                 { expiresIn: 3600 },
                 (err, token) => {
                     if (err) throw err;
@@ -350,14 +367,6 @@ app.get('/auth/user', auth, async (req, res) => {
 //decode token
 app.get('/decode', async (req, res) => {
     const token = req.header('x-auth-token');
-    const decoded = jwt.verify(token, config.get('jwtSecret'));
+    const decoded = jwt.verify(token, JWTSECRET);
     res.json(decoded);
 })
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log(`Server has started on port ${PORT}`);
-});
