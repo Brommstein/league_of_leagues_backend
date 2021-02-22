@@ -4,13 +4,12 @@ const cors = require('cors');
 const pool = require('./db');
 const config = require('config');
 const jwt = require('jsonwebtoken');
-const auth = require('./middleware/auth');
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-
 //middleware
+const auth = require('./middleware/auth');
 app.use(cors());
 app.use(express.json());
 
@@ -26,14 +25,20 @@ app.post('/users', async (req, res) => {
         const { leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday, team } = req.body;
 
         //Check for all needed data
-        if (!leaguename || !preferedrole || !team) return res.status(400).json({ msg: 'Please enter all fields' });
+        if (!leaguename || !preferedrole || !team) return res.status(400).json({ msg: 'Please enter all fields...' });
 
         //Check if user already exists
-        //Need to find way to do this...
+        const usercheck = await pool.query('SELECT * FROM users');
+
+        for (let i = 0; i < usercheck.rows.length; i++) {
+            if (usercheck.rows[i].leaguename === leaguename) {
+                return res.status(400).json({ msg: 'User already exists...' });
+            }
+        }
 
         //Send data to db
         const newUser = await pool.query('INSERT INTO users (leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday, team) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', [leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday, team]);
-        res.json(newUser.rows[0]);
+        return res.json('New user created!');
 
     } catch (err) {
         console.error(err.message);
@@ -94,6 +99,20 @@ app.put('/users/:id', auth, async (req, res) => {
     }
 })
 
+//delete a user
+
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteUser = await pool.query('DELETE FROM users WHERE userid = $1', [id]);
+        res.json('User was deleted!');
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
 //TEAM UPDATE
 //update a user's team
 
@@ -103,18 +122,6 @@ app.put('/teamupdate/:id', async (req, res) => {
         const { team } = req.body;
         const updateteam = await pool.query('UPDATE users SET team = $1 WHERE userid = $2', [team, id])
         res.json('User team was updated!')
-    } catch (err) {
-        console.error(err.message);
-    }
-})
-
-//delete a user
-
-app.delete('/users/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deleteUser = await pool.query('DELETE FROM users WHERE userid = $1', [id]);
-        res.json('User was deleted!');
     } catch (err) {
         console.error(err.message);
     }
