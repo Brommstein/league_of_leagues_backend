@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const pool = require('./db');
+const pool = require('../db');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 //middleware
-const auth = require('./middleware/auth');
+const auth = require('../middleware/auth');
 app.use(cors());
 app.use(express.json());
 
