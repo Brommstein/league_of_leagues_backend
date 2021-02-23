@@ -1,6 +1,6 @@
 const knex = require('knex');
-const app = require('../app');
-const { PORT, DATABASE_URL, JWTSECRET } = require('./config');
+const app = require('./app');
+const { PORT, DATABASE_URL } = require('./config');
 if (process.env.NODE_ENV === "production") {
     const pg = require('pg');
     pg.defaults.ssl = { rejectUnauthorized: false }
