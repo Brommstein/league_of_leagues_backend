@@ -3,6 +3,7 @@ const UsersService = {
     getAllUsers(knex) {
         return knex.select('*').from('users');
     },
+
     //Add a user
     insertUser(knex, newuser) {
         return knex
@@ -13,6 +14,7 @@ const UsersService = {
                 return rows[0];
             });
     },
+
     //Get a user
     getById(knex, id) {
         return knex
@@ -21,6 +23,7 @@ const UsersService = {
             .where('id', id)
             .first();
     },
+
     //Delete a user
     deleteUser(knex, id) {
         return knex
@@ -28,6 +31,7 @@ const UsersService = {
             .where({ id })
             .delete();
     },
+
     //Update a user
     updateUser(knex, id, newuserFields) {
         return knex
@@ -35,6 +39,7 @@ const UsersService = {
             .where({ id })
             .update(newuserFields);
     },
+
     //Update a user's team
     updateUserTeam(knex, id, newteamFields) {
         return knex

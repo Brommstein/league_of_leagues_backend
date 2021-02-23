@@ -8,7 +8,7 @@ const jsonBodyParser = express.json();
 const serializeUser = users => ({
     id: users.id,
     leaguename: xss(users.leaguename),
-    preferedrole: xss(users.preferedrole),
+    preferedrole: users.preferedrole,
     secondaryrole: users.secondaryrole,
     sunday: users.sunday,
     monday: users.monday,
@@ -45,7 +45,7 @@ userRouter
             newUser.secondaryrole = secondaryrole;
         }
 
-        UsersService.insertNote(knexInstance, newUser)
+        UsersService.insertUser(knexInstance, newUser)
             .then(users => {
                 res.status(201)
                     .location(path.posix.join(req.originalUrl, `/${users.id}`))
