@@ -2,7 +2,7 @@ const express = require('express');
 const AuthService = require('./auth-service');
 const authRouter = express.Router();
 const jsonBodyParser = express.json();
-const auth = require('./middleware/auth');
+const auth = require('../middleware/auth');
 const { JWTSECRET } = require('../config');
 
 authRouter
