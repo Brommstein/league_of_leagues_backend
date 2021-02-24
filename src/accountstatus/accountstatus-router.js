@@ -43,7 +43,7 @@ accountstatusRouter
 
         bcrypt.hash(_password, saltRounds, function (err, hash) {
             if (err) console.error(err.message);
-            newAccountstatus[_password] = hash;
+            newAccountstatus._password = hash;
             console.log('After hashing the password');
             console.table(newAccountstatus);
             AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
