@@ -44,33 +44,36 @@ accountstatusRouter
         bcrypt.hash(password, saltRounds, function (hash) {
             newAccountstatus.password = hash;
             console.table(newAccountstatus);
-            jwt.sign(
-                {
-                    id: userid,
-                    name: username,
-                    status: status
-                },
-                JWTSECRET,
-                { expiresIn: 3600 },
-                (err, token) => {
-                    console.table(token);
-                    if (err) throw err;
-                    AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
-                        .then(accountstatus => {
-                            console.table(accountstatus);
-                            res.status(201)
-                                .location(path.posix.join(req.originalUrl, `/${accountstatus.id}`))
-                                .json({
-                                    token,
-                                    user: {
-                                        id: userid,
-                                        username: username,
-                                        status: status
-                                    }
-                                })
-                        }).catch(next);
-                });
-        });
+        })
+
+        AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
+            .then(accountstatus => {
+                console.table(accountstatus);
+                res.status(201)
+                    .location(path.posix.join(req.originalUrl, `/${accountstatus.id}`))
+                    .then(jwt.sign(
+                        {
+                            id: userid,
+                            name: username,
+                            status: status
+                        },
+                        JWTSECRET,
+                        { expiresIn: 3600 },
+                        (err, token) => {
+                            console.table(token);
+                            if (err) throw err;
+                            res.json({
+                                token,
+                                user: {
+                                    id: userid,
+                                    username: username,
+                                    status: status
+                                }
+                            })
+
+                        }))
+
+            }).catch(next);
     });
 /*
 app.get('/accountstatus', async (req, res) => {
