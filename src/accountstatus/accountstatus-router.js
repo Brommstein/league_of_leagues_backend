@@ -33,10 +33,13 @@ accountstatusRouter
         const { userid, username, password, status } = req.body;
         const newAccountstatus = { userid, username, password, status };
 
+        console.log('Before hashing of password');
+        console.table(newAccountstatus);
+
         for (const [key, value] of Object.entries(newAccountstatus)) {
             if (value == null) {
                 return res.status(400).json({
-                    error: { message: `Missing '${key}' in request body` }
+                    error: { message: `Missing '${key}'` }
                 });
             }
         }
@@ -44,8 +47,12 @@ accountstatusRouter
         bcrypt.hash(password, saltRounds, function (err, hash) {
             if (err) console.error(err.message);
             newAccountstatus.password = hash;
+            console.log('After hashing the password');
+            console.table(newAccountstatus);
             AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
                 .then(accountstatus => {
+                    console.log('newAccountstatus inserted into db');
+                    console.table(accountstatus);
                     jwt.sign(
                         {
                             id: userid,
@@ -56,6 +63,8 @@ accountstatusRouter
                         { expiresIn: 3600 },
                         (err, token) => {
                             if (err) throw err;
+                            console.log('Token created');
+                            console.log({ token });
                             res.status(201)
                                 .location(path.posix.join(req.originalUrl, `/${accountstatus.userid}`))
                                 .json({
