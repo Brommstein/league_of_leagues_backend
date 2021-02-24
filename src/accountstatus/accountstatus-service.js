@@ -33,7 +33,7 @@ const AsscountStatusService = {
         return knex
             .from('accountstatus')
             .where('userid', id)
-            .where('status', 'User').orWhere('status', 'Captain')
+            .where('_status', 'User').orWhere('_status', 'Captain')
             .update(newaccountstatusFields);
     }
 };
