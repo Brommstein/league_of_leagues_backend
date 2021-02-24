@@ -11,6 +11,7 @@ const UsersService = {
             .into('users')
             .returning('*')
             .then(rows => {
+                console.table(rows);
                 return rows[0];
             });
     },
