@@ -100,8 +100,23 @@ teamRouter
             .catch(next);
     })
     .patch(jsonBodyParser, (req, res, next) => {
-        const { teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support } = req.body;
-        const newTeamFields = { teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support };
+        const { teamname, teamabr, captainid, captain, topid, _top, jungleid, jungle, midid, mid, adcid, adc, supportid, support } = req.body;
+        const newTeamFields = {};
+
+        if (teamname) newTeamFields.teamname = teamname;
+        if (teamabr) newTeamFields.teamabr = teamabr;
+        if (captainid) newTeamFields.captainid = captainid;
+        if (captain) newTeamFields.captain = captain;
+        if (topid) newTeamFields.topid = topid;
+        if (_top) newTeamFields._top = _top;
+        if (jungleid) newTeamFields.jungleid = jungleid;
+        if (jungle) newTeamFields.jungle = jungle;
+        if (midid) newTeamFields.midid = midid;
+        if (mid) newTeamFields.mid = mid;
+        if (adcid) newTeamFields.adcid = adcid;
+        if (adc) newTeamFields.adc = adc;
+        if (supportid) newTeamFields.supportid = supportid;
+        if (support) newTeamFields.support = support;
 
         const numOfValues = Object.values(newTeamFields).filter(Boolean).length;
         if (numOfValues === 0) {
