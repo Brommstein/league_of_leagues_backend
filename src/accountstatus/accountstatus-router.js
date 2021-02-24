@@ -37,8 +37,7 @@ accountstatusRouter
                     error: { message: `Missing '${key}' in request body` }
                 });
 
-        bcrypt.hash(password, saltRounds, async function (err, hash) { //May need to fix
-            if (err) throw err;
+        bcrypt.hash(password, saltRounds, function (hash) {
             newAccountstatus.password = hash;
             jwt.sign(
                 {
