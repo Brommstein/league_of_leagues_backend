@@ -33,7 +33,7 @@ accountstatusRouter
 
         console.log('Before hashing of password');
         console.log('req.body', req.body);
-        console.table('newAccountstatus', newAccountstatus);
+        //console.log('newAccountstatus', newAccountstatus);
 
         for (const [key, value] of Object.entries(newAccountstatus))
             if (value == null)
