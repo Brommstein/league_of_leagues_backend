@@ -30,7 +30,7 @@ accountstatusRouter
     })
     .post(jsonBodyParser, (req, res, next) => {
         const knexInstance = req.app.get('db');
-        const { userid, username, password, status } = req.body;
+        const { userid, username, _password, _status } = req.body;
         const newAccountstatus = { userid, username, _password, _status };
 
         console.log('Before hashing of password');
