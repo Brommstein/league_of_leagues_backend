@@ -16,6 +16,8 @@ const serializeAccountstatus = accountstatus => ({
     status: xss(accountstatus.status)
 });
 
+let usertoken = '';
+
 accountstatusRouter
     .route('/')
     .get((req, res, next) => {
@@ -39,19 +41,12 @@ accountstatusRouter
             }
         }
 
-        console.table(newAccountstatus);
-
-        bcrypt.hash(password, saltRounds, function (hash) {
+        bcrypt.hash(password, saltRounds, function (err, hash) {
+            if (err) console.error(err.message);
             newAccountstatus.password = hash;
-            console.table(newAccountstatus);
-        })
-
-        AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
-            .then(accountstatus => {
-                console.table(accountstatus);
-                res.status(201)
-                    .location(path.posix.join(req.originalUrl, `/${accountstatus.id}`))
-                    .then(jwt.sign(
+            AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
+                .then(accountstatus => {
+                    jwt.sign(
                         {
                             id: userid,
                             name: username,
@@ -60,20 +55,20 @@ accountstatusRouter
                         JWTSECRET,
                         { expiresIn: 3600 },
                         (err, token) => {
-                            console.table(token);
                             if (err) throw err;
-                            res.json({
-                                token,
-                                user: {
-                                    id: userid,
-                                    username: username,
-                                    status: status
-                                }
-                            })
-
-                        }))
-
-            }).catch(next);
+                            res.status(201)
+                                .location(path.posix.join(req.originalUrl, `/${accountstatus.userid}`))
+                                .json({
+                                    token,
+                                    user: {
+                                        id: userid,
+                                        username: username,
+                                        status: status
+                                    }
+                                })
+                        })
+                }).catch(next);
+        })
     });
 /*
 app.get('/accountstatus', async (req, res) => {
