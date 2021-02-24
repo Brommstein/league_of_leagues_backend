@@ -18,21 +18,22 @@ const AsscountStatusService = {
         return knex
             .from('accountstatus')
             .select('*')
-            .where('id', id)
+            .where('userid', id)
             .first();
     },
     //Delete an accountstatus
     deleteAccountstatus(knex, id) {
         return knex
             .from('accountstatus')
-            .where({ id })
+            .where('userid', id)
             .delete();
     },
     //Update an accountstatus
     updateAccountstatus(knex, id, newaccountstatusFields) {
         return knex
             .from('accountstatus')
-            .where({ id })
+            .where('userid', id)
+            .where('status', 'User').orWhere('status', 'Captain')
             .update(newaccountstatusFields);
     }
 };

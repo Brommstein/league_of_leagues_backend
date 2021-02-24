@@ -11,7 +11,6 @@ const UsersService = {
             .into('users')
             .returning('*')
             .then(rows => {
-                console.log(rows);
                 return rows[0];
             });
     },
@@ -21,7 +20,7 @@ const UsersService = {
         return knex
             .from('users')
             .select('*')
-            .where('id', id)
+            .where('userid', id)
             .first();
     },
 
@@ -29,7 +28,7 @@ const UsersService = {
     deleteUser(knex, id) {
         return knex
             .from('users')
-            .where({ id })
+            .where('userid', id)
             .delete();
     },
 
@@ -37,7 +36,7 @@ const UsersService = {
     updateUser(knex, id, newuserFields) {
         return knex
             .from('users')
-            .where({ id })
+            .where('userid', id)
             .update(newuserFields);
     },
 
@@ -45,7 +44,7 @@ const UsersService = {
     updateUserTeam(knex, id, newteamFields) {
         return knex
             .from('users')
-            .where({ id })
+            .where('userid', id)
             .update(newteamFields);
     }
 };

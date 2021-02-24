@@ -3,6 +3,8 @@ const AuthService = require('./auth-service');
 const authRouter = express.Router();
 const jsonBodyParser = express.json();
 const auth = require('../middleware/auth');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { JWTSECRET } = require('../config');
 
 authRouter
@@ -57,15 +59,16 @@ authRouter
                 return res.status(400).json({
                     error: { message: `Missing '${key}' in request body` }
                 });
-        AuthService.login(knexInstance, username)
+
+        AuthService.login(knexInstance, login.username)
             .then(login => {
-                bcrypt.compare(password, login.rows[0].password).then(isMatch => {
+                bcrypt.compare(password, login[0].password, (err, isMatch) => {
                     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials...' });
                     jwt.sign(
                         {
-                            id: login.rows[0].userid,
-                            name: login.rows[0].username,
-                            status: login.rows[0].status
+                            id: login[0].userid,
+                            name: login[0].username,
+                            status: login[0].status
                         },
                         JWTSECRET,
                         { expiresIn: 3600 },
@@ -74,15 +77,15 @@ authRouter
                             res.json({
                                 token,
                                 user: {
-                                    id: login.rows[0].userid,
-                                    name: login.rows[0].username,
-                                    status: login.rows[0].status
+                                    id: login[0].userid,
+                                    name: login[0].username,
+                                    status: login[0].status
                                 }
                             });
                         }
                     )
-                }).catch(next);
-            });
+                })
+            }).catch(next);
     });
 
 authRouter
@@ -119,7 +122,7 @@ res.json(decoded);
 })
     */
     .get((req, res) => {
-        const { token } = req.header('x-auth-token');
+        const token = req.header('x-auth-token');
         const decoded = jwt.verify(token, JWTSECRET);
         res.json(decoded);
     })

@@ -18,21 +18,21 @@ const TeamsService = {
         return knex
             .from('teams')
             .select('*')
-            .where('id', id)
+            .where('teamid', id)
             .first();
     },
     //Delete a team
     deleteTeam(knex, id) {
         return knex
             .from('teams')
-            .where({ id })
+            .where('teamid', id)
             .delete();
     },
     //Update a team
     updateTeam(knex, id, newteamFields) {
         return knex
             .from('teams')
-            .where({ id })
+            .where('teamid', id)
             .update(newteamFields);
     }
 };

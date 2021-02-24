@@ -50,25 +50,21 @@ accountstatusRouter
                 { expiresIn: 3600 },
                 (err, token) => {
                     if (err) throw err;
-                    res.json({
-                        token,
-                        user: {
-                            id: userid,
-                            username: username,
-                            status: status
-                        }
-                    })
-                }
-            )
-        })
-
-        AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
-            .then(accountstatus => {
-                res.status(201)
-                    .location(path.posix.join(req.originalUrl, `/${accountstatus.id}`))
-                    .json(serializeAccountstatus(accountstatus));
-            })
-            .catch(next);
+                    AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
+                        .then(accountstatus => {
+                            res.status(201)
+                                .location(path.posix.join(req.originalUrl, `/${accountstatus.id}`))
+                                .json({
+                                    token,
+                                    user: {
+                                        id: userid,
+                                        username: username,
+                                        status: status
+                                    }
+                                })
+                        }).catch(next);
+                });
+        });
     });
 /*
 app.get('/accountstatus', async (req, res) => {

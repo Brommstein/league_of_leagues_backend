@@ -44,7 +44,7 @@ teamRouter
                     error: { message: `Missing '${key}' in request body` }
                 });
 
-        TeamsService.insertNote(knexInstance, newTeam)
+        TeamsService.insertTeam(knexInstance, newTeam)
             .then(teams => {
                 res.status(201)
                     .location(path.posix.join(req.originalUrl, `/${teams.id}`))
@@ -110,7 +110,7 @@ teamRouter
                 .json({
                     error: {
                         message:
-                            'Your response must include one of the following fields: teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support',
+                            "You didn't make any changes.",
                     },
                 });
         }

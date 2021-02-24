@@ -47,7 +47,6 @@ userRouter
 
         UsersService.insertUser(knexInstance, newUser)
             .then(users => {
-                console.table(users);
                 res.status(201)
                     .location(path.posix.join(req.originalUrl, `/${users.id}`))
                     .json(serializeUser(users));
@@ -122,7 +121,11 @@ userRouter
     })
     .patch(jsonBodyParser, (req, res, next) => {
         const { leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday } = req.body;
-        const newNoteFields = { leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday };
+        const newNoteFields = { sunday, monday, tuesday, wednesday, thursday, friday, saturday };
+
+        if (leaguename) newNoteFields.leaguename = leaguename;
+        if (preferedrole) newNoteFields.preferedrole = preferedrole;
+        if (secondaryrole) newNoteFields.secondaryrole = secondaryrole;
 
         const numOfValues = Object.values(newNoteFields).filter(Boolean).length;
         if (numOfValues === 0) {
@@ -222,7 +225,7 @@ userRouter
                 .json({
                     error: {
                         message:
-                            'Your response must include one of the following fields: leaguename, preferedrole, secondaryrole, sunday, monday, tuesday, wednesday, thursday, friday, saturday',
+                            'Your response must include a team abr.',
                     },
                 });
         }
