@@ -51,24 +51,24 @@ authRouter
     */
     .post(jsonBodyParser, (req, res, next) => {
         const knexInstance = req.app.get('db');
-        const { username, password } = req.body;
-        const login = { username, password };
+        const { username, _password } = req.body;
+        const login = { username, _password };
 
         for (const [key, value] of Object.entries(login))
             if (value == null)
                 return res.status(400).json({
-                    error: { message: `Missing '${key}' in request body` }
+                    error: { message: `Missing '${key}'` }
                 });
 
         AuthService.login(knexInstance, login.username)
             .then(login => {
-                bcrypt.compare(password, login[0].password, (err, isMatch) => {
+                bcrypt.compare(_password, login[0]._password, (err, isMatch) => {
                     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials...' });
                     jwt.sign(
                         {
                             id: login[0].userid,
                             name: login[0].username,
-                            status: login[0].status
+                            status: login[0]._status
                         },
                         JWTSECRET,
                         { expiresIn: 3600 },
@@ -79,7 +79,7 @@ authRouter
                                 user: {
                                     id: login[0].userid,
                                     name: login[0].username,
-                                    status: login[0].status
+                                    status: login[0]._status
                                 }
                             });
                         }
