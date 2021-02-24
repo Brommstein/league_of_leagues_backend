@@ -12,7 +12,7 @@ const serializeTeam = teams => ({
     captainid: teams.captainid,
     captain: teams.captain,
     topid: teams.topid,
-    top: teams.top,
+    _top: teams._top,
     jungleid: teams.jungleid,
     jungle: teams.jungle,
     midid: teams.midid,
@@ -35,8 +35,8 @@ teamRouter
     })
     .post(jsonBodyParser, (req, res, next) => {
         const knexInstance = req.app.get('db');
-        const { teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support } = req.body;
-        const newTeam = { teamname, teamabr, captainid, captain, topid, top, jungleid, jungle, midid, mid, adcid, adc, supportid, support };
+        const { teamname, teamabr, captainid, captain, topid, _top, jungleid, jungle, midid, mid, adcid, adc, supportid, support } = req.body;
+        const newTeam = { teamname, teamabr, captainid, captain, topid, _top, jungleid, jungle, midid, mid, adcid, adc, supportid, support };
 
         for (const [key, value] of Object.entries(newTeam))
             if (value == null)
@@ -47,7 +47,7 @@ teamRouter
         TeamsService.insertTeam(knexInstance, newTeam)
             .then(teams => {
                 res.status(201)
-                    .location(path.posix.join(req.originalUrl, `/${teams.id}`))
+                    .location(path.posix.join(req.originalUrl, `/${teams.teamid}`))
                     .json(serializeTeam(teams));
             })
             .catch(next);
