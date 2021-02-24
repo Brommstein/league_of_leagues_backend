@@ -31,11 +31,15 @@ accountstatusRouter
         const { userid, username, password, status } = req.body;
         const newAccountstatus = { userid, username, password, status };
 
-        for (const [key, value] of Object.entries(newAccountstatus))
-            if (value == null)
+        for (const [key, value] of Object.entries(newAccountstatus)) {
+            if (value == null) {
                 return res.status(400).json({
                     error: { message: `Missing '${key}' in request body` }
                 });
+            }
+        }
+
+        console.table(newAccountstatus);
 
         bcrypt.hash(password, saltRounds, function (hash) {
             newAccountstatus.password = hash;
