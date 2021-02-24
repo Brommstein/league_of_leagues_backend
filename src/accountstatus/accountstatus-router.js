@@ -146,8 +146,8 @@ accountstatusRouter
             .catch(next);
     })
     .patch(jsonBodyParser, (req, res, next) => {
-        const { status } = req.body;
-        const newaccountstatusFields = { status };
+        const { _status } = req.body;
+        const newaccountstatusFields = { _status };
 
         const numOfValues = Object.values(newaccountstatusFields).filter(Boolean).length;
         if (numOfValues === 0) {
