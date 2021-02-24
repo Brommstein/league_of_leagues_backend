@@ -12,11 +12,9 @@ const saltRounds = 10;
 const serializeAccountstatus = accountstatus => ({
     userid: accountstatus.userid,
     username: xss(accountstatus.username),
-    password: xss(accountstatus.password),
-    status: xss(accountstatus.status)
+    _password: xss(accountstatus.password),
+    _status: xss(accountstatus.status)
 });
-
-let usertoken = '';
 
 accountstatusRouter
     .route('/')
@@ -37,13 +35,11 @@ accountstatusRouter
         console.log('req.body', req.body);
         console.table('newAccountstatus', newAccountstatus);
 
-        for (const [key, value] of Object.entries(newAccountstatus)) {
-            if (value == null) {
+        for (const [key, value] of Object.entries(newAccountstatus))
+            if (value == null)
                 return res.status(400).json({
                     error: { message: `Missing '${key}'` }
                 });
-            }
-        }
 
         bcrypt.hash(_password, saltRounds, function (err, hash) {
             if (err) console.error(err.message);
@@ -69,7 +65,7 @@ accountstatusRouter
                             res.status(201)
                                 .location(path.posix.join(req.originalUrl, `/${accountstatus.userid}`))
                                 .json({
-                                    token,
+                                    token: token,
                                     user: {
                                         id: userid,
                                         username: username,
