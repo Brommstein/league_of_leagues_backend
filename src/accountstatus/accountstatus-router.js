@@ -45,9 +45,9 @@ accountstatusRouter
             }
         }
 
-        bcrypt.hash(password, saltRounds, function (err, hash) {
+        bcrypt.hash(_password, saltRounds, function (err, hash) {
             if (err) console.error(err.message);
-            newAccountstatus.password = hash;
+            newAccountstatus[_password] = hash;
             console.log('After hashing the password');
             console.table(newAccountstatus);
             AccountstatusService.insertAccountstatus(knexInstance, newAccountstatus)
@@ -58,7 +58,7 @@ accountstatusRouter
                         {
                             id: userid,
                             name: username,
-                            status: status
+                            status: _status
                         },
                         JWTSECRET,
                         { expiresIn: 3600 },
@@ -73,7 +73,7 @@ accountstatusRouter
                                     user: {
                                         id: userid,
                                         username: username,
-                                        status: status
+                                        status: _status
                                     }
                                 })
                         })
