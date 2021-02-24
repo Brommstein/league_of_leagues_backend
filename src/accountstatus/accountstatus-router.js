@@ -34,7 +34,7 @@ accountstatusRouter
         const newAccountstatus = { userid, username, _password, _status };
 
         console.log('Before hashing of password');
-        console.table('req.body', req.body);
+        console.log('req.body', req.body);
         console.table('newAccountstatus', newAccountstatus);
 
         for (const [key, value] of Object.entries(newAccountstatus)) {
