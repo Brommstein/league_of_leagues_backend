@@ -1,3 +1,3 @@
-# League of Leagues Backend
+# League of Leagues Backend Portion
 
-Thinkful first capstone
+The server portion of my Thinkful capstone project.
