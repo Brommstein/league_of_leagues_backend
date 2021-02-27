@@ -2,7 +2,7 @@ const express = require('express');
 const AuthService = require('./auth-service');
 const authRouter = express.Router();
 const jsonBodyParser = express.json();
-const auth = require('../middleware/auth');
+//const auth = require('../middleware/auth');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { JWTSECRET } = require('../config');
@@ -87,31 +87,31 @@ authRouter
                 })
             }).catch(next);
     });
-
+/*
 authRouter
-    .route('/user')
-    /*
-    app.get('/auth/user', auth, async (req, res) => {
-    const { id } = res.locals.user;
-    try {
-        await pool.query('SELECT username, status FROM accountstatus WHERE userid = $1', [id])
-            .then(user => res.json(user.rows[0]));
-    } catch (err) {
-        console.error(err.message);
-    }
+   .route('/user')
+  
+   app.get('/auth/user', auth, async (req, res) => {
+   const { id } = res.locals.user;
+   try {
+       await pool.query('SELECT username, status FROM accountstatus WHERE userid = $1', [id])
+           .then(user => res.json(user.rows[0]));
+   } catch (err) {
+       console.error(err.message);
+   }
 })
-    */
-    .get(auth, (req, res, next) => {
-        const { id } = res.locals.user;
-        const knexInstance = req.app.get('db');
-        //await pool.query('SELECT username, status FROM accountstatus WHERE userid = $1', [id])
-        AuthService.getAuthUser(knexInstance, id)
-            .then(auth => {
-                res.json(auth.rows[0]);
-            })
-            .catch(next);
-    });
-
+   
+   .get(auth, (req, res, next) => {
+       const { id } = res.locals.user;
+       const knexInstance = req.app.get('db');
+       //await pool.query('SELECT username, status FROM accountstatus WHERE userid = $1', [id])
+       AuthService.getAuthUser(knexInstance, id)
+           .then(auth => {
+               res.json(auth.rows[0]);
+           })
+           .catch(next);
+   });
+*/
 authRouter
     .route('/decode')
     /*
