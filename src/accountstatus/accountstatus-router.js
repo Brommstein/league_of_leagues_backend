@@ -12,8 +12,8 @@ const saltRounds = 10;
 const serializeAccountstatus = accountstatus => ({
     userid: accountstatus.userid,
     username: xss(accountstatus.username),
-    _password: xss(accountstatus.password),
-    _status: xss(accountstatus.status)
+    _password: xss(accountstatus._password),
+    _status: xss(accountstatus._status)
 });
 
 accountstatusRouter
@@ -22,6 +22,7 @@ accountstatusRouter
         const knexInstance = req.app.get('db');
         AccountstatusService.getAllAccountstatus(knexInstance)
             .then(accountstatus => {
+                console.log(accountstatus);
                 res.json(accountstatus.map(serializeAccountstatus));
             })
             .catch(next);

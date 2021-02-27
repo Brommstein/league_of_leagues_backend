@@ -1,25 +1,13 @@
 const { expect } = require('chai');
-const knex = require('knex');
 const supertest = require('supertest');
 const app = require('../src/app');
 const { makeAccountStatus, createAccount, emptyAccount, makeMaliciousImg } = require('./accountstatus.fixtures');
 
 describe('Accountstatus Endpoints', () => {
-    let db;
 
-    before('Make the knex instancec', () => {
-        db = knex({
-            client: 'pg',
-            connection: process.env.TEST_DATABASE_URL
-        });
-        app.set('db', db);
-    });
+    before('clean the table', () => db.raw('TRUNCATE accountstatus'));
 
-    after('Disconnect from the database', () => db.destroy());
-
-    before('clean the table', () => db.raw('TRUNCATE accountstatus RESTART IDENTITY CASCADE'));
-
-    afterEach('cleanup', () => db.raw('TRUNCATE accountstatus RESTART IDENTITY CASCADE'));
+    afterEach('cleanup', () => db.raw('TRUNCATE accountstatus'));
 
     describe('/GET /accountstatus', () => {
         context('given no accountstatus in the database', () => {
@@ -68,7 +56,7 @@ describe('Accountstatus Endpoints', () => {
                     .insert(testAccountStatus);
             });
 
-            if ('returns a 200 and the expected accountstatus', () => {
+            it('returns a 200 and the expected accountstatus', () => {
                 const testId = 2;
                 const expectedAccount = testAccountStatus[testId - 1];
 
@@ -88,15 +76,18 @@ describe('Accountstatus Endpoints', () => {
                 .send(newAccountstatus)
                 .expect(201)
                 .expect(res => {
-                    expect(res.body.userid).to.eql(newAccountstatus.userid)
-                    expect(res.body.username).to.eql(newAccountstatus.username)
-                    //skipped password because it gets bcrypt'ed
-                    expect(res.body._status).to.eql(newAccountstatus._status)
+                    expect(res.body).to.have.property('token')
+                    expect(res.body).to.have.property('user')
                 })
                 .then(postRes => {
                     return supertest(app)
-                        .get(`/accountstatus/${postRes.body.userid}`)
-                        .expect(postRes.body);
+                        .get(`/accountstatus/${postRes.body.user.id}`)
+                        .expect(res => {
+                            expect(res.body.userid).to.eql(newAccountstatus.userid)
+                            expect(res.body.username).to.eql(newAccountstatus.username)
+                            //skipped password cause it is bcrypted
+                            expect(res.body._status).to.eql(newAccountstatus._status)
+                        });
                 });
         });
 
@@ -108,7 +99,7 @@ describe('Accountstatus Endpoints', () => {
                 .send(emptyAccountStatus)
                 .expect(400)
                 .expect({
-                    error: { message: `Missing username` }
+                    error: { message: `Missing 'username'` }
                 });
         });
 
@@ -120,7 +111,11 @@ describe('Accountstatus Endpoints', () => {
                 .send(maliciousImg)
                 .expect(201)
                 .expect(res => {
-                    expect(res.body.username).to.eql(expectedImg.username);
+                    expect(res.body).to.have.property('token')
+                    expect(res.body).to.have.property('user')
+                    expect(res.body.user.id).to.eql(expectedImg.userid)
+                    expect(res.body.user.username).to.eql(expectedImg.username)
+                    expect(res.body.user.status).to.eql(expectedImg._status)
                 });
         });
     });

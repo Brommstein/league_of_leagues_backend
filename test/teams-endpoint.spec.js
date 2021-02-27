@@ -1,21 +1,9 @@
 const { expect } = require('chai');
-const knex = require('knex');
 const supertest = require('supertest');
 const app = require('../src/app');
-const { makeTeam, createTeam, emptyTeam, makeMaliciousImg } = require('./Teams.fixtures');
+const { makeTeam, makeTestTeam, createTeam, emptyTeam, makeMaliciousImg } = require('./teams.fixtures');
 
 describe('Teams Endpoints', () => {
-    let db;
-
-    before('Make the knex instancec', () => {
-        db = knex({
-            client: 'pg',
-            connection: process.env.TEST_DATABASE_URL
-        });
-        app.set('db', db);
-    });
-
-    after('Disconnect from the database', () => db.destroy());
 
     before('clean the table', () => db.raw('TRUNCATE teams RESTART IDENTITY CASCADE'));
 
@@ -38,10 +26,31 @@ describe('Teams Endpoints', () => {
                     .insert(testTeams);
             });
 
-            it('returns with a 200 and the array of folder', () => {
+            it('returns with a 200 and the object of teams', () => {
                 return supertest(app)
                     .get('/teams')
-                    .expect(200, testTeams);
+                    .expect(200)
+                    .expect(res => {
+                        let obj = 0;
+                        res.body.forEach((team) => {
+                            if (team.hasOwnProperty('teamid')) { obj++ };
+                        })
+                        expect(obj).to.eql(3);
+                        expect(res.body.teamname).to.eql(testTeams.teamname)
+                        expect(res.body.teamabr).to.eql(testTeams.teamabr)
+                        expect(res.body.captainid).to.eql(testTeams.captainid)
+                        expect(res.body.captain).to.eql(testTeams.captain)
+                        expect(res.body.topid).to.eql(testTeams.topid)
+                        expect(res.body._top).to.eql(testTeams._top)
+                        expect(res.body.jungleid).to.eql(testTeams.jungleid)
+                        expect(res.body.jungle).to.eql(testTeams.jungle)
+                        expect(res.body.midid).to.eql(testTeams.midid)
+                        expect(res.body.mid).to.eql(testTeams.mid)
+                        expect(res.body.adcid).to.eql(testTeams.adcid)
+                        expect(res.body.adc).to.eql(testTeams.adc)
+                        expect(res.body.supportid).to.eql(testTeams.supportid)
+                        expect(res.body.support).to.eql(testTeams.support)
+                    });
             });
         });
     });
@@ -88,6 +97,7 @@ describe('Teams Endpoints', () => {
                 .send(newTeams)
                 .expect(201)
                 .expect(res => {
+                    console.log(res.body)
                     expect(res.body).to.have.property('teamid')
                     expect(res.body.teamname).to.eql(newTeams.teamname)
                     expect(res.body.teamabr).to.eql(newTeams.teamabr)
@@ -110,11 +120,11 @@ describe('Teams Endpoints', () => {
         });
 
         it('rejectes a teams with no _top, sending a 400 and error', () => {
-            const emptyTeam = emptyTeam();
+            const _emptyTeam = emptyTeam();
 
             return supertest(app)
                 .post('/teams')
-                .send(emptyTeam)
+                .send(_emptyTeam)
                 .expect(400)
                 .expect({
                     error: { message: `Missing '_top'` }
@@ -150,7 +160,7 @@ describe('Teams Endpoints', () => {
         });
 
         context('given teams in the database', () => {
-            const test = makeTeam();
+            const test = makeTestTeam();
 
             beforeEach('Add teams to the database', () => {
                 return db.into('teams')
@@ -160,6 +170,8 @@ describe('Teams Endpoints', () => {
             it('deletes the teams and returns a 204', () => {
                 const testId = 2;
                 const expectedTeam = test.filter(folder => folder.teamid != testId);
+
+                console.log('expectedTeam', expectedTeam);
 
                 return supertest(app)
                     .delete(`/teams/${testId}`)
@@ -188,7 +200,7 @@ describe('Teams Endpoints', () => {
         });
 
         context('When items are in the database', () => {
-            const testTeams = makeTeam();
+            const testTeams = makeTestTeam();
             beforeEach('Add teams to database', () => {
                 return db.into('teams')
                     .insert(testTeams);

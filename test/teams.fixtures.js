@@ -1,53 +1,16 @@
 function makeTeam() {
     return [
-        {
-            teamname: 'Test1',
-            teamabr: 'TT1',
-            captainid: '1',
-            captain: 'Dum1',
-            topid: '1',
-            _top: 'Dum1',
-            jungleid: '2',
-            jungle: 'Dum2',
-            midid: '3',
-            mid: 'Dum3',
-            adcid: '4',
-            adc: 'Dum4',
-            supportid: '5',
-            support: 'Dum5'
-        },
-        {
-            teamname: 'Test2',
-            teamabr: 'TT2',
-            captainid: '2',
-            captain: 'Dum2',
-            topid: '1',
-            _top: 'Dum1',
-            jungleid: '2',
-            jungle: 'Dum2',
-            midid: '3',
-            mid: 'Dum3',
-            adcid: '4',
-            adc: 'Dum4',
-            supportid: '5',
-            support: 'Dum5'
-        },
-        {
-            teamname: 'Test3',
-            teamabr: 'TT3',
-            captainid: '3',
-            captain: 'Dum3',
-            topid: '1',
-            _top: 'Dum1',
-            jungleid: '2',
-            jungle: 'Dum2',
-            midid: '3',
-            mid: 'Dum3',
-            adcid: '4',
-            adc: 'Dum4',
-            supportid: '5',
-            support: 'Dum5'
-        }
+        { teamname: 'Test1', teamabr: 'TT1', captainid: '1', captain: 'Dum1', topid: '1', _top: 'Dum1', jungleid: '2', jungle: 'Dum2', midid: '3', mid: 'Dum3', adcid: '4', adc: 'Dum4', supportid: '5', support: 'Dum5' },
+        { teamname: 'Test2', teamabr: 'TT2', captainid: '2', captain: 'Dum2', topid: '1', _top: 'Dum1', jungleid: '2', jungle: 'Dum2', midid: '3', mid: 'Dum3', adcid: '4', adc: 'Dum4', supportid: '5', support: 'Dum5' },
+        { teamname: 'Test3', teamabr: 'TT3', captainid: '3', captain: 'Dum3', topid: '1', _top: 'Dum1', jungleid: '2', jungle: 'Dum2', midid: '3', mid: 'Dum3', adcid: '4', adc: 'Dum4', supportid: '5', support: 'Dum5' }
+    ];
+}
+
+function makeTestTeam() {
+    return [
+        { teamid: 1, teamname: 'Test1', teamabr: 'TT1', captainid: '1', captain: 'Dum1', topid: '1', _top: 'Dum1', jungleid: '2', jungle: 'Dum2', midid: '3', mid: 'Dum3', adcid: '4', adc: 'Dum4', supportid: '5', support: 'Dum5' },
+        { teamid: 2, teamname: 'Test2', teamabr: 'TT2', captainid: '2', captain: 'Dum2', topid: '1', _top: 'Dum1', jungleid: '2', jungle: 'Dum2', midid: '3', mid: 'Dum3', adcid: '4', adc: 'Dum4', supportid: '5', support: 'Dum5' },
+        { teamid: 3, teamname: 'Test3', teamabr: 'TT3', captainid: '3', captain: 'Dum3', topid: '1', _top: 'Dum1', jungleid: '2', jungle: 'Dum2', midid: '3', mid: 'Dum3', adcid: '4', adc: 'Dum4', supportid: '5', support: 'Dum5' }
     ];
 }
 
@@ -73,11 +36,11 @@ function createTeam() {
 function emptyTeam() {
     return {
         teamname: 'Test2',
-        teamabr: 'TT2',
+        teamabr: 'TTT',
         captainid: '2',
         captain: 'Dum2',
         topid: '1',
-        _top: '',
+        _top: null,
         jungleid: '2',
         jungle: 'Dum2',
         midid: '3',
@@ -131,6 +94,7 @@ function makeMaliciousImg() {
 
 module.exports = {
     makeTeam,
+    makeTestTeam,
     createTeam,
     emptyTeam,
     makeMaliciousImg

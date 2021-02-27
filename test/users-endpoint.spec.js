@@ -1,21 +1,11 @@
 const { expect } = require('chai');
-const knex = require('knex');
 const supertest = require('supertest');
 const app = require('../src/app');
-const { makeUser, createUser, emptyUser, makeMaliciousImg } = require('./users.fixtures');
+const { makeUser, makeTestUser, createUser, emptyUser, makeMaliciousImg } = require('./users.fixtures');
+
+
 
 describe('Users Endpoints', () => {
-    let db;
-
-    before('Make the knex instancec', () => {
-        db = knex({
-            client: 'pg',
-            connection: process.env.TEST_DATABASE_URL
-        });
-        app.set('db', db);
-    });
-
-    after('Disconnect from the database', () => db.destroy());
 
     before('clean the table', () => db.raw('TRUNCATE users RESTART IDENTITY CASCADE'));
 
@@ -38,10 +28,29 @@ describe('Users Endpoints', () => {
                     .insert(testUsers);
             });
 
-            it('returns with a 200 and the array of folder', () => {
+            it('returns with a 200 and the array of users', () => {
                 return supertest(app)
                     .get('/users')
-                    .expect(200, testUsers);
+                    .expect(200)
+                    .expect(res => {
+                        console.log(res.body)
+                        let obj = 0;
+                        res.body.forEach((user) => {
+                            if (user.hasOwnProperty('userid')) { obj++ };
+                        })
+                        expect(obj).to.eql(3);
+                        expect(res.body.leaguename).to.eql(testUsers.leaguename)
+                        expect(res.body.preferedrole).to.eql(testUsers.preferedrole)
+                        expect(res.body.secondaryrole).to.eql(testUsers.secondaryrole)
+                        expect(res.body.sunday).to.eql(testUsers.sunday)
+                        expect(res.body.monday).to.eql(testUsers.monday)
+                        expect(res.body.tuesday).to.eql(testUsers.tuesday)
+                        expect(res.body.wednesday).to.eql(testUsers.wednesday)
+                        expect(res.body.thursday).to.eql(testUsers.thursday)
+                        expect(res.body.friday).to.eql(testUsers.friday)
+                        expect(res.body.saturday).to.eql(testUsers.saturday)
+                        expect(res.body.team).to.eql(testUsers.team)
+                    });
             });
         });
     });
@@ -81,29 +90,30 @@ describe('Users Endpoints', () => {
 
     describe('POST /users', () => {
         it('creates an users responding with a 201 then the new users', () => {
-            const newUsers = createUser();
+            const nUser = createUser();
 
             return supertest(app)
                 .post('/users')
-                .send(newUsers)
+                .send(nUser)
                 .expect(201)
                 .expect(res => {
-                    expect(res.body).to.have.property('id')
-                    expect(res.body.leaguename).to.eql(newUsers.leaguename)
-                    expect(res.body.preferedrole).to.eql(newUsers.preferedrole)
-                    expect(res.body.secondaryrole).to.eql(newUsers.secondaryrole)
-                    expect(res.body.sunday).to.eql(newUsers.sunday)
-                    expect(res.body.monday).to.eql(newUsers.monday)
-                    expect(res.body.tuesday).to.eql(newUsers.tuesday)
-                    expect(res.body.wednesday).to.eql(newUsers.wednesday)
-                    expect(res.body.thursday).to.eql(newUsers.thursday)
-                    expect(res.body.friday).to.eql(newUsers.friday)
-                    expect(res.body.saturday).to.eql(newUsers.preferedrole)
-                    expect(res.body.team).to.eql(newUsers.team)
+                    console.log(res.body)
+                    expect(res.body).to.have.property('userid')
+                    expect(res.body.leaguename).to.eql(nUser.leaguename)
+                    expect(res.body.preferedrole).to.eql(nUser.preferedrole)
+                    expect(res.body.secondaryrole).to.eql(nUser.secondaryrole)
+                    expect(res.body.sunday).to.eql(nUser.sunday)
+                    expect(res.body.monday).to.eql(nUser.monday)
+                    expect(res.body.tuesday).to.eql(nUser.tuesday)
+                    expect(res.body.wednesday).to.eql(nUser.wednesday)
+                    expect(res.body.thursday).to.eql(nUser.thursday)
+                    expect(res.body.friday).to.eql(nUser.friday)
+                    expect(res.body.saturday).to.eql(nUser.saturday)
+                    expect(res.body.team).to.eql(nUser.team)
                 })
                 .then(postRes => {
                     return supertest(app)
-                        .get(`/users/${postRes.body.id}`)
+                        .get(`/users/${postRes.body.userid}`)
                         .expect(postRes.body);
                 });
         });
@@ -148,7 +158,7 @@ describe('Users Endpoints', () => {
         });
 
         context('given users in the database', () => {
-            const test = makeUser();
+            const test = makeTestUser();
 
             beforeEach('Add users to the database', () => {
                 return db.into('users')
@@ -162,11 +172,11 @@ describe('Users Endpoints', () => {
                 return supertest(app)
                     .delete(`/users/${testId}`)
                     .expect(204)
-                    .then(res =>
+                    .then(res => {
                         supertest(app)
                             .get('/users')
                             .expect(expectedStatus)
-                    );
+                    });
             });
         });
     });
@@ -195,13 +205,13 @@ describe('Users Endpoints', () => {
             it('updates the users name with a 204', () => {
                 const idToUpdate = 2;
                 const updateUser = {
-                    sunday: 'true',
-                    monday: 'false',
-                    tuesday: 'false',
-                    wednesday: 'false',
-                    thursday: 'true',
-                    friday: 'false',
-                    saturday: 'true'
+                    sunday: true,
+                    monday: false,
+                    tuesday: false,
+                    wednesday: false,
+                    thursday: true,
+                    friday: false,
+                    saturday: true
                 };
                 const expectedStatus = {
                     ...testUsers[idToUpdate - 1],
@@ -212,11 +222,12 @@ describe('Users Endpoints', () => {
                     .patch(`/users/${idToUpdate}`)
                     .send(updateUser)
                     .expect(204)
-                    .then(res =>
+                    .then(res => {
+                        console.log('res', res.body)
                         supertest(app)
                             .get(`/users/${idToUpdate}`)
                             .expect(expectedStatus)
-                    )
+                    });
             });
 
             it('returns a 400 and error when there is nothing to update', () => {
